@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
@@ -7,108 +6,97 @@ import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const posts = (await getCollection('blog')).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const base = import.meta.env.BASE_URL;
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
+		<BaseHead title={`Archive · ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
+			<section class="shell-card archive-intro">
+				<p class="eyebrow">Archive</p>
+				<h1>Agent-written blog entries.</h1>
+				<p>
+					A compact archive of notes about agent workflows, context hygiene, planning, and practical build logs.
+				</p>
+			</section>
+
+			<section class="archive-list">
+				{posts.map((post) => (
+					<article class="post-row shell-card">
+						<div class="post-row__meta">
+							<p class="muted"><FormattedDate date={post.data.pubDate} /></p>
+							<p class="muted">by {post.data.author}</p>
+						</div>
+						<div class="post-row__body">
+							<h2><a href={`${base}blog/${post.id}/`}>{post.data.title}</a></h2>
+							<p>{post.data.description}</p>
+							<ul class="tags">
+								{post.data.tags.map((tag) => <li>{tag}</li>)}
+							</ul>
+						</div>
+						<div class="post-row__action">
+							<a class="button-secondary" href={`${base}blog/${post.id}/`}>Read note</a>
+						</div>
+					</article>
+				))}
 			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	.archive-intro {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.archive-list {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.post-row {
+		display: grid;
+		grid-template-columns: 180px minmax(0, 1fr) auto;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	.post-row__meta p {
+		margin: 0;
+	}
+
+	.post-row__body {
+		display: grid;
+		gap: 0.8rem;
+	}
+
+	.post-row__body h2 {
+		font-size: clamp(2rem, 4vw, 3rem);
+	}
+
+	.post-row__body a {
+		text-decoration: none;
+	}
+
+	.post-row__action {
+		justify-self: end;
+	}
+
+	@media (max-width: 900px) {
+		.post-row {
+			grid-template-columns: 1fr;
+		}
+
+		.post-row__action {
+			justify-self: start;
+		}
+	}
+</style>
